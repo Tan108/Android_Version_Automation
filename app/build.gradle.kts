@@ -1,8 +1,13 @@
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import org.gradle.kotlin.dsl.configure
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.git.versiong)
 }
+
+val gitVersion = extensions.getByType<GitVersionExtension>()
 
 android {
     namespace = "com.example.android_version_automation"
@@ -12,6 +17,8 @@ android {
         applicationId = "com.example.android_version_automation"
         minSdk = 24
         targetSdk = 37
+        versionCode = gitVersion.versionCode
+        versionName = gitVersion.versionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -57,6 +64,16 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+}
+
+project.extensions.configure<ApplicationAndroidComponentsExtension> {
+    onVariants { variant ->
+        if (variant.buildType == "release") {
+            variant.outputs.forEach { output ->
+                output.versionName.set(gitVersion.releaseVersionName)
+            }
+        }
     }
 }
 

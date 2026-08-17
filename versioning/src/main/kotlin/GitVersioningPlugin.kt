@@ -1,13 +1,14 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import java.util.Properties
-import com.android.build.api.dsl.ApplicationExtension
-import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import org.gradle.kotlin.dsl.configure
 
 class GitVersioningPlugin : Plugin<Project> {
-
     override fun apply(project: Project) {
+
+        val extension = project.extensions.create(
+            "gitVersion",
+            GitVersionExtension::class.java
+        )
 
         val versionProperties = loadVersionProperties(project)
 
@@ -69,12 +70,17 @@ class GitVersioningPlugin : Plugin<Project> {
 
         val versionCodeFromGit = baseVersionCode + commitsSinceTag
 
-        configureAndroid(
-            project = project,
-            calculatedVersionName = versionNameFromGit,
-            calculatedVersionCode = versionCodeFromGit,
-            releaseVersionName = baseVersionName
-        )
+
+        extension.versionName = versionNameFromGit
+        extension.versionCode = versionCodeFromGit
+        extension.releaseVersionName = baseVersionName
+
+//        configureAndroid(
+//            project = project,
+//            calculatedVersionName = versionNameFromGit,
+//            calculatedVersionCode = versionCodeFromGit,
+//            releaseVersionName = baseVersionName
+//        )
     }
 
     private fun loadVersionProperties(project: Project): Properties {
@@ -125,40 +131,10 @@ class GitVersioningPlugin : Plugin<Project> {
                 minor.toInt() * 100 +
                 patch.toInt()
     }
+}
 
-
-    private fun configureAndroid(
-        project: Project,
-        calculatedVersionName: String,
-        calculatedVersionCode: Int,
-        releaseVersionName: String
-    ) {
-
-        project.pluginManager.withPlugin("com.android.application") {
-
-            project.extensions.configure<ApplicationExtension> {
-
-                defaultConfig {
-                    this.versionCode = calculatedVersionCode
-                    this.versionName = calculatedVersionName
-                }
-            }
-
-            project.extensions.configure<ApplicationAndroidComponentsExtension> {
-
-                onVariants { variant ->
-
-                    if (variant.buildType == "release") {
-
-                        variant.outputs.forEach { output ->
-
-                            output.versionName.set(
-                                releaseVersionName
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
+open class GitVersionExtension {
+    var versionName: String = ""
+    var versionCode: Int = 1
+    var releaseVersionName: String = ""
 }
