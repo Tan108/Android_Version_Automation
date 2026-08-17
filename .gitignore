@@ -10,7 +10,7 @@
 .cxx
 local.properties
 
-# Gradle build-logic generated files
-build-logic/.gradle/
-build-logic/.kotlin/
-build-logic/build/
+# Gradle versioning generated files
+versioning/.gradle/
+versioning/.kotlin/
+versioning/build/

@@ -27,8 +27,7 @@ class GitVersioningPlugin : Plugin<Project> {
             ?: 0
 
         val fallbackVersionName = "$major.$minor.$patch"
-        val fallbackVersionCode =
-            major * 10000 + minor * 100 + patch
+        val fallbackVersionCode = major * 10000 + minor * 100 + patch
 
         val latestTag = git(
             project,
@@ -44,22 +43,18 @@ class GitVersioningPlugin : Plugin<Project> {
             "HEAD"
         ) ?: "nogit"
 
-        val commitsSinceTag = latestTag
-            ?.let { tag ->
-                git(
-                    project,
-                    "rev-list",
-                    "$tag..HEAD",
-                    "--count"
-                )?.toIntOrNull() ?: 0
-            }
-            ?: 0
+        val commitsSinceTag = latestTag?.let { tag ->
+            git(
+                project,
+                "rev-list",
+                "$tag..HEAD",
+                "--count"
+            )?.toIntOrNull() ?: 0
+        } ?: 0
 
-        val baseTagVersion = latestTag
-            ?.removePrefix("v")
+        val baseTagVersion = latestTag?.removePrefix("v")
 
-        val baseVersionName =
-            baseTagVersion ?: fallbackVersionName
+        val baseVersionName = baseTagVersion ?: fallbackVersionName
 
         val baseVersionCode =
             baseTagVersion
@@ -67,18 +62,12 @@ class GitVersioningPlugin : Plugin<Project> {
                 ?: fallbackVersionCode
 
         val versionNameFromGit = when {
-            latestTag == null ->
-                "$fallbackVersionName+local.$sha"
-
-            commitsSinceTag == 0 ->
-                baseVersionName
-
-            else ->
-                "$baseVersionName+$commitsSinceTag.$sha"
+            latestTag == null -> "$fallbackVersionName+local.$sha"
+            commitsSinceTag == 0 -> baseVersionName
+            else -> "$baseVersionName+$commitsSinceTag.$sha"
         }
 
-        val versionCodeFromGit =
-            baseVersionCode + commitsSinceTag
+        val versionCodeFromGit = baseVersionCode + commitsSinceTag
 
         configureAndroid(
             project = project,
@@ -136,7 +125,6 @@ class GitVersioningPlugin : Plugin<Project> {
                 minor.toInt() * 100 +
                 patch.toInt()
     }
-
 
 
     private fun configureAndroid(

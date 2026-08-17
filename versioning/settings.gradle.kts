@@ -1,4 +1,4 @@
-rootProject.name = "build-logic"
+rootProject.name = "versioning"
 
 dependencyResolutionManagement {
     repositories {
