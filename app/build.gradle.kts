@@ -25,8 +25,8 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix=".debug"
-            versionNameSuffix="-debug"
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
             isMinifyEnabled = false
         }
 
@@ -42,18 +42,18 @@ android {
     productFlavors {
         flavorDimensions += "env"
 
-        create("qa"){
-            applicationIdSuffix=".qa"
-            versionNameSuffix="-qa"
+        create("qa") {
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
         }
 
-        create("staging"){
-            applicationIdSuffix=".staging"
-            versionNameSuffix="-staging"
+        create("staging") {
+            applicationIdSuffix = ".staging"
+            versionNameSuffix = "-staging"
         }
 
-        create("prod"){
-            versionNameSuffix="-prod"
+        create("prod") {
+            versionNameSuffix = "-prod"
         }
     }
 
@@ -67,12 +67,28 @@ android {
     }
 }
 
-project.extensions.configure<ApplicationAndroidComponentsExtension> {
+androidComponents {
     onVariants { variant ->
-        if (variant.buildType == "release") {
-            variant.outputs.forEach { output ->
-                output.versionName.set(gitVersion.releaseVersionName)
+
+        val flavorName = variant.productFlavors
+            .joinToString("-") { it.second }
+            .ifEmpty { "default" }
+
+        val apkName = "AndroidVersionAutomation-" +
+                "${gitVersion.releaseVersionName}-" +
+                "${gitVersion.versionCode}-" +
+                "$flavorName-" +
+                "${variant.buildType}.apk"
+
+        variant.outputs.forEach { output ->
+
+            if (variant.buildType == "release") {
+                output.versionName.set(
+                    gitVersion.releaseVersionName
+                )
             }
+
+            output.outputFileName.set(apkName)
         }
     }
 }
@@ -88,7 +104,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+//    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
