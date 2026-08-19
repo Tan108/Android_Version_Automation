@@ -26,39 +26,35 @@ platform :android do
   end
 
 
-  private_lane :distribute_apk do |options|
+private_lane :distribute_apk do |options|
 
-    flavor = options[:flavor]
-    build_type = options[:build_type]
+  flavor = options[:flavor]
+  build_type = options[:build_type]
 
-    task = "assemble#{flavor.capitalize}#{build_type}"
+  task = "assemble#{flavor.capitalize}#{build_type}"
 
-    UI.message("Building #{task}")
+  UI.message("Building #{task}")
 
-    gradle(
-      task: task
-    )
+  gradle(
+    task: task
+  )
 
-    apk_path = Dir[
-      "app/build/outputs/apk/#{flavor}/#{build_type.downcase}/*.apk"
-    ].first
+  apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
 
-    UI.user_error!(
-      "APK not found for #{flavor} #{build_type}"
-    ) unless apk_path
+  UI.user_error!(
+    "APK not found for #{flavor} #{build_type}"
+  ) unless apk_path && File.exist?(apk_path)
 
-    UI.success(
-      "#{build_type} APK generated: #{apk_path}"
-    )
+  UI.success("APK generated: #{apk_path}")
 
-    firebase_app_distribution(
-      app: ENV["FIREBASE_APP_ID"],
-      apk_path: apk_path,
-      android_artifact_type: "APK",
-      service_credentials_file: "firebase-service-account.json",
-      groups: "qa-testers",
-      release_notes: "#{flavor.upcast} #{build_type} build"
-    )
-  end
+  firebase_app_distribution(
+    app: ENV["FIREBASE_APP_ID"],
+    apk_path: apk_path,
+    android_artifact_type: "APK",
+    service_credentials_file: "firebase-service-account.json",
+    groups: "qa-testers",
+    release_notes: "#{flavor.upcase} #{build_type} build"
+  )
+end
 
 end
