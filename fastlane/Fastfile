@@ -1,0 +1,24 @@
+default_platform(:android)
+
+platform :android do
+
+  desc "Build and distribute QA APK to Firebase App Distribution"
+  lane :qa do
+
+    # Build QA Release APK
+    gradle(
+      task: "assembleProdRelease"
+    )
+
+    # Distribute APK to Firebase testers
+    firebase_app_distribution(
+      app: "1:232351200737:android:bff8a509ef40f504960ea0",
+      apk_path: "app/build/outputs/apk/prod/release/AndroidVersionAutomation-1.0.1-10005-prod-release.apk",
+      android_artifact_type: "APK",
+      service_credentials_file: "../Android_Version_Automation/mydemo-2de8f-firebase-adminsdk-fbsvc-9ea0903801.json",
+      groups: "qa-testers",
+      release_notes: "Production APK build for testing"
+    )
+  end
+
+end
