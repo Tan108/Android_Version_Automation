@@ -10,6 +10,8 @@
 .cxx
 local.properties
 firebase-service-account.json
+*.jks
+*.keystore
 
 # Gradle versioning generated files
 versioning/.gradle/

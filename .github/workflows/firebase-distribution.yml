@@ -19,11 +19,17 @@ jobs:
 
     steps:
 
+      # --------------------------------------------------
+      # Checkout
+      # --------------------------------------------------
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # --------------------------------------------------
+      # Setup JDK
+      # --------------------------------------------------
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
@@ -31,15 +37,24 @@ jobs:
           java-version: "17"
           cache: gradle
 
+      # --------------------------------------------------
+      # Setup Ruby
+      # --------------------------------------------------
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           bundler-cache: true
 
+      # --------------------------------------------------
+      # Grant Gradle permission
+      # --------------------------------------------------
       - name: Grant Gradle permission
         run: chmod +x ./gradlew
 
+      # --------------------------------------------------
+      # Create Firebase credentials
+      # --------------------------------------------------
       - name: Create Firebase credentials
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -47,14 +62,41 @@ jobs:
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > firebase-service-account.json
           chmod 600 firebase-service-account.json
 
+      # --------------------------------------------------
+      # Create Release Keystore
+      # --------------------------------------------------
+      - name: Create release keystore
+        env:
+          RELEASE_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+        run: |
+          echo "$RELEASE_KEYSTORE_BASE64" | base64 --decode > release-key.jks
+          chmod 600 release-key.jks
+
+      # --------------------------------------------------
+      # Build and distribute
+      # --------------------------------------------------
       - name: Build and distribute
         env:
+          # Firebase
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+
+          # Release signing
+          RELEASE_KEYSTORE_FILE: ${{ github.workspace }}/release-key.jks
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+
+          # Selected flavor
           FLAVOR: ${{ inputs.flavor }}
+
         run: |
           bundle exec fastlane distribute flavor:$FLAVOR
 
+      # --------------------------------------------------
+      # Cleanup sensitive files
+      # --------------------------------------------------
       - name: Cleanup credentials
         if: always()
         run: |
           rm -f firebase-service-account.json
+          rm -f release-key.jks
