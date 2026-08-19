@@ -9,6 +9,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+firebase-service-account.json
 
 # Gradle versioning generated files
 versioning/.gradle/
